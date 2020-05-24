@@ -21,6 +21,8 @@ namespace sedc.videorental.Services.Services
             _movierepository = new MovieRepository();
         }
 
+
+        //fix subscription
         public void ViewMovieList(User user)
         {
             string erroeMessage = string.Empty;
@@ -29,34 +31,15 @@ namespace sedc.videorental.Services.Services
             while (!isFinished)
 
             {
-                Screen.ClearScreen();
+         
+               Screen.ClearScreen();
                 Screen.ErrorMessage(erroeMessage);
+
 
                 if (movies.Count != 0)
                 {
                     PrintMoviesInfo(movies);
-                    if (user.IsSubscriptionExpired)
-                    {
-                        Console.WriteLine("\nYour Subscription has expired would you like to renew your subscription y/n");
-                        var readline = Console.ReadLine();
-                        LoadingHelpers.Spiner();
-
-                        if (readline == "y")
-                        {
-                            var renewed = user.SubscriptionRenwed = DateTime.Now;
-                            user.IsSubscriptionExpired = !user.IsSubscriptionExpired;
-                            Console.WriteLine($"\nThank you {user.FullName} your subscription has been renewed {renewed}!");
-                        }
-                        else if (readline == "n")
-                        {
-                            Console.WriteLine("Please renew your subscription if you want to rent a movie");
-                            Thread.Sleep(5000);
-                            isFinished = !isFinished;
-                            break; 
-                           
-                        }
-                     
-                    }
+                   
                 }
                 else
                 {
@@ -132,11 +115,11 @@ namespace sedc.videorental.Services.Services
 
         }
 
+
+
         public void ViewSpeicalOffers(User user)
         {
             string errorMessage = string.Empty;
-            var premiers = _movierepository.GetPremiers();
-            var discounts = _movierepository.GetDiscountMovies();
             bool isgoing = false;
             Screen.SpecialOffers();
 
@@ -148,16 +131,21 @@ namespace sedc.videorental.Services.Services
                 switch (specialoffers)
                 {
                     case 1:
-                        PrintMoviesInfo(discounts);
-                        Console.WriteLine("1.Rent a movie from our special limited offer");
+                        Console.WriteLine("\nChoose what kind of discount you would like ");
+                        var read = InputParser.ToDiscount();
+                        var discountmovies = _movierepository.GetMoviesWithDiscount(read);
+                        LoadingHelpers.Spiner();
+                        Screen.ClearScreen();
+                        PrintMoviesInfo(discountmovies);
+                        Console.WriteLine("\n1.Rent a movie from our special limited offer");
                         Console.WriteLine("2 Go back");
                         var readline = InputParser.ToInteger(1, 2);
                         switch (readline)
                         {
                             case 1:
-
-                                RentVideofromDiscounts(user);
-                                break;
+                                RentVideo(user);
+                                isgoing = !isgoing;
+                              break;
 
                             case 2:
                                 isgoing = !isgoing;
@@ -168,34 +156,40 @@ namespace sedc.videorental.Services.Services
                         break;
 
                     case 2:
+                        var premiers = _movierepository.GetMoviesifPremier();
+                        LoadingHelpers.Spiner();
+                        Screen.ClearScreen();
                         PrintMoviesInfo(premiers);
-                        Console.WriteLine("1.Rent a movie from our special limited offer");
+                      Console.WriteLine("1.Rent a movie from our special limited offer");
                         Console.WriteLine("2 Go back");
                         var readlines = InputParser.ToInteger(1, 2);
 
                         switch (readlines)
                         {
                             case 1:
-                                RentVideofromPremiers(user);
-                                break;
+                                RentVideo(user);
+                                isgoing = !isgoing;
+                              break;
 
                             case 2:
                                 isgoing = !isgoing;
                                 break;
                         }
                         break;
-
+              
                 }
+
             }
 
         }
+
+   
 
         public void ViewMovieListAsAdmin(User user)
         {
             string erroeMessage = string.Empty;
             var movies = _movierepository.GetAllMovies();
-            var premiers = _movierepository.GetPremiers();
-            var discounts = _movierepository.GetDiscountMovies();
+     
             bool isFinished = false;
 
             while (!isFinished)
@@ -207,8 +201,7 @@ namespace sedc.videorental.Services.Services
                 if (movies.Count != 0)
                 {
                     PrintMoviesInfo(movies);
-                    PrintMoviesInfo(discounts);
-                    PrintMoviesInfo(premiers);
+          
 
                 }
                 else
@@ -221,6 +214,8 @@ namespace sedc.videorental.Services.Services
                 isFinished = !isFinished;
             }
         }
+
+
 
         private void RentVideo(User user)
         {
@@ -242,19 +237,19 @@ namespace sedc.videorental.Services.Services
                     throw new Exception($"You have aleady rented this movie {movie.Title}");
 
                 }
-                /*
-                                var listofrentedmovieids = user.RentedMovies
-                                    .Select(rental => rental.Movie.Id)
-                                    .ToList();*/
-                /*   if (listofrentedmovieids.Contains(movieId))
-                   {
-                       throw new Exception($"You have aleady rented this movie {movie.Title}");
-                   }*/
+
+                var listofrentedmovieids = user.RentedMovies
+                    .Select(rental => rental.Movie.Id)
+                    .ToList();
+                if (listofrentedmovieids.Contains(movieId))
+                {
+                    throw new Exception($"You have aleady rented this movie {movie.Title}");
+                }
 
 
                 if (!movie.IsAviable)
                 {
-                    throw new Exception($"Movie { movie.Title }  mis not avaiable at the moment");
+                    throw new Exception($"Movie { movie.Title }  is not avaiable at the moment");
 
                 }
 
@@ -272,7 +267,7 @@ namespace sedc.videorental.Services.Services
                     movie.IsAviable = !movie.IsAviable;
                 }
                 user.RentedMovies.Add(new RentalInfo(movie));
-                Console.WriteLine("Successfully rented movie");
+                Console.WriteLine($"Successfully rented movie {movie.Title}");
                 Thread.Sleep(2000);
             }
             else
@@ -280,85 +275,7 @@ namespace sedc.videorental.Services.Services
                 throw new Exception($" No movie was found with {movieId} id");
             }
         }
-
-        private void RentVideofromPremiers(User user)
-        {
-            Console.WriteLine("Enter movie id:");
-            var movieId = InputParser.ToInteger(_movierepository.GetPremiers()
-                .Min(_movie => _movie.Id),
-                _movierepository.GetPremiers()
-                .Max(_movie => _movie.Id)
-                );
-            var movie = _movierepository.GetMovieByIDPremiers(movieId);
-
-
-            if (!movie.IsAviable)
-            {
-                throw new Exception($"Movie { movie.Title }  is not avaiable at the moment");
-
-            }
-
-            Console.WriteLine($"Are you sure you want to rent {movie.Title}? y/n");
-            bool confirm = InputParser.ToConfirm();
-            if (!confirm)
-            {
-                return;
-            }
-            Console.WriteLine("Renting movie please wait...");
-            LoadingHelpers.Spiner();
-            movie.Quantity--;
-            if (movie.Quantity == 0)
-            {
-                movie.IsAviable = !movie.IsAviable;
-            }
-
-            user.RentedMovies.Add(new RentalInfo(movie));
-            Console.WriteLine("Successfully rented an awesome movie");
-            Console.WriteLine("Press 2 to go back");
-            Thread.Sleep(2000);
-
-
-        }
-
-
-        private void RentVideofromDiscounts(User user)
-        {
-            Console.WriteLine("Enter movie id:");
-            var movieId = InputParser.ToInteger(_movierepository.GetDiscountMovies()
-                .Min(_movie => _movie.Id),
-                _movierepository.GetDiscountMovies()
-                .Max(_movie => _movie.Id)
-                );
-            var movie = _movierepository.GetMoviesByIDDiscounts(movieId);
-
-
-            if (!movie.IsAviable)
-            {
-                throw new Exception($"Movie { movie.Title }  is not avaiable at the moment");
-
-            }
-
-            Console.WriteLine($"Are you sure you want to rent {movie.Title}? y/n");
-            bool confirm = InputParser.ToConfirm();
-            if (!confirm)
-            {
-                return;
-            }
-            Console.WriteLine("Renting movie please wait...");
-            LoadingHelpers.Spiner();
-            movie.Quantity--;
-            if (movie.Quantity == 0)
-            {
-                movie.IsAviable = !movie.IsAviable;
-            }
-
-            user.RentedMovies.Add(new RentalInfo(movie));
-            Console.WriteLine("Successfully rented an awesome movie");
-            Console.WriteLine("Press 2 to go back");
-            Thread.Sleep(2000);
-
-
-        }
+        
         public void ViewRentedVideos(User user)
         {
             string errorMessage = string.Empty;
@@ -445,20 +362,20 @@ namespace sedc.videorental.Services.Services
                 rental.DateRented = DateTime.Now;
 
                 // fix bug later
-                /*     var movie = _movierepository.GetMovieById(movieid);
-                     if (movie.Quantity == 0)
-                     {
-                         movie.IsAviable = !movie.IsAviable;
-                     }
+                var movie = _movierepository.GetMovieById(movieid);
+                if (movie.Quantity == 0)
+                {
+                    movie.IsAviable = !movie.IsAviable;
+                }
 
-                     movie.Quantity += 1;
-               */
+                movie.Quantity += 1;
+
 
                 user.RentedMovies.Remove(rental);
                 user.RentedMoviesHistory.Add(rental);
 
 
-                Console.WriteLine("Successfully returned");
+                Console.WriteLine($"Successfully returned ");
                 Thread.Sleep(2000);
                 return;
             }
@@ -469,16 +386,13 @@ namespace sedc.videorental.Services.Services
 
         }
 
-
-
-
         private void PrintMoviesInfo(List<Movie> movies)
         {
             foreach (var movie in movies)
             {
                 string availability = movie.IsAviable ? "Yes" : "No";
                 Console.WriteLine(string.Format
-                    ("Rent id: {0} Title {1} Release Date {2} Genre {3} isAvailable {4} Quantity{5}", movie.Id
+                    ("Rent id: {0} Title {1} Release Date {2} Genre {3} isAvailable {4} Quantity {5}", movie.Id
                     , movie.Title,
                     movie.ReleaseDate.ToString
                     ("MMMM dd yyyy"), movie.Genre, availability
@@ -517,8 +431,11 @@ namespace sedc.videorental.Services.Services
                 var length = InputParser.ToInteger(60, 300);
                 Console.WriteLine("Enter quantity");
                 var quantity = InputParser.ToInteger(1, 20);
+                Console.WriteLine("Is it a premier");
+                var premier = bool.Parse(Console.ReadLine());
                 Console.WriteLine("And finally enter realse date");
                 DateTime relasedate = InputParser.ToDateTime();
+                
 
                 Console.WriteLine("Adding movie please wait:....");
                 LoadingHelpers.Spiner();
@@ -527,6 +444,7 @@ namespace sedc.videorental.Services.Services
 
                 var movie = new Movie
                 {
+                    
                     Title = title,
                     AgeRestriction = agerestriction,
                     Genre = genre,
@@ -534,6 +452,7 @@ namespace sedc.videorental.Services.Services
                     Language = language,
                     Length = length,
                     Quantity = quantity,
+                    isapremier = premier,
                     ReleaseDate = relasedate
 
                 };
@@ -555,28 +474,20 @@ namespace sedc.videorental.Services.Services
                 var movieId = InputParser.ToInteger(1, 35);
                 var movie = _movierepository.GetMovieById(movieId);
                 var movies = _movierepository.GetAllMovies();
-                var premiers = _movierepository.GetMovieByIDPremiers(movieId);
-                var getpremier = _movierepository.GetPremiers();
-                var discounts = _movierepository.GetMoviesByIDDiscounts(movieId);
-                var getdisucounts = _movierepository.GetDiscountMovies();
 
 
-                //bug 
+                if (!movie.IsAviable)
+                {
+                    throw new Exception($"Movie  is not avaiable at the moment");
 
-                /*      if (!movie.IsAviable)
-                      {
-                          throw new Exception($"Movie  is not avaiable at the moment");
-  */
-                //}
+                    }
 
-                Console.WriteLine($"Are you sure you want to delete the movie? y/n");
+                    Console.WriteLine($"Are you sure you want to delete the movie? {movie.Title}y/n");
                 bool confirm = InputParser.ToConfirm();
                 Console.WriteLine("Deleting movie please wait...");
                 LoadingHelpers.Spiner();
-                getdisucounts.Remove(discounts);
-                getpremier.Remove(premiers);
                 movies.Remove(movie);
-                Console.WriteLine($"You have deleted succesfully ");
+                Console.WriteLine($"You have deleted succesfully {movie.Title}");
                 return null;
 
             }
