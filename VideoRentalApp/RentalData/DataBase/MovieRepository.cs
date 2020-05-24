@@ -14,16 +14,6 @@ namespace sedc.videorental.data.DataBase
             return Movies;
         }
 
-        public List<Movie> GetPremiers()
-        {
-            return Premieres;
-        }
-
-        public List<Movie> GetDiscountMovies()
-        {
-            return DiscountsMovies;
-        }
-
         public List<Movie> GetbyGenre(Genre genre)
         {
             return Movies.Where(_movie => _movie.Genre == genre).ToList();
@@ -80,16 +70,23 @@ namespace sedc.videorental.data.DataBase
 
         }
 
-        public Movie GetMovieByIDPremiers(int id)
+        public List<Movie> GetMoviesWithDiscount(Discount discount)
         {
-            return Premieres.FirstOrDefault(_movie => +_movie.Id == id);
+            return Movies.Where(_movie => _movie.Disocunt == discount).ToList();
         }
 
-        public Movie GetMoviesByIDDiscounts(int id)
+        public List<Movie> OrderDiscountMovie()
         {
-            return DiscountsMovies.FirstOrDefault(_movie => + _movie.Id == id);
+            return Movies.OrderBy(_movie => _movie.Disocunt).ToList();
         }
 
+        public List<Movie> GetMoviesifPremier()
+        {
+            return Movies.Where(_movie => _movie.isapremier).ToList();
+        }
+
+
+      
 
     }
 }

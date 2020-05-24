@@ -9,16 +9,7 @@ namespace sedc.videorental.data.DataBase
   public  class UserRepository:InMemoryDatabase
     {
 
-
-        public List<User> GetAllUsers()
-        {
-            return Users;
-        }
-
-        public User GetUserByIdCard(int idCard)
-        {
-            return Users.FirstOrDefault(_user => _user.CardNumber == idCard);
-        }
+      
         public bool Createuser(User user)
         {
             var beforeCount = Users.Count;
@@ -32,6 +23,12 @@ namespace sedc.videorental.data.DataBase
             return Users.Select(_user => _user.CardNumber)
             .ToList();
 
+        }
+
+
+        public User GetUserByIdCard(int idCard)
+        {
+            return Users.FirstOrDefault(_user => _user.CardNumber == idCard);
         }
     }
 }
