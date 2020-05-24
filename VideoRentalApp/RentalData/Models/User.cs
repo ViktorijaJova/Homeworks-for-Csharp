@@ -23,6 +23,8 @@ namespace sedc.videorental.data.Models
 
         public List<RentalInfo> NewMoviesAdded { get; set; }
 
+        public List<string> SuggestionBox { get; set; }
+
        
 
         

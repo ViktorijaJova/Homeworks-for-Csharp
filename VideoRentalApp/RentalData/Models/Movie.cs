@@ -15,6 +15,9 @@ namespace sedc.videorental.data.Models
         public int Length { get; set; }
         public int AgeRestriction { get; set; }
         public int Quantity { get; set; }
+        public bool isapremier { get; set; }
+
+        public Discount Disocunt { get; set; }
 
 
 
