@@ -5,14 +5,14 @@ using System.Text;
 
 namespace sedc.videorental.Services.Helpers
 {
-   public class InputParser
+    public class InputParser
     {
 
-        private static readonly List<string> _validConfirmInput = new List<string> { "Y","y","yes","Yes","1","True"};
-        private static readonly List<string> _validDeclineInput = new List<string> {"n","N","No","no","0","False" };
+        private static readonly List<string> _validConfirmInput = new List<string> { "Y", "y", "yes", "Yes", "1", "True" };
+        private static readonly List<string> _validDeclineInput = new List<string> { "n", "N", "No", "no", "0", "False" };
         public static int ToInteger(int min, int max)
         {
-            int parsedNumber =0;
+            int parsedNumber = 0;
             bool isValid = false;
 
             while (!isValid)
@@ -20,7 +20,7 @@ namespace sedc.videorental.Services.Helpers
                 try
                 {
                     parsedNumber = int.Parse(Console.ReadLine());
-                    if(!(parsedNumber >= min && parsedNumber <= max))
+                    if (!(parsedNumber >= min && parsedNumber <= max))
                     {
                         throw new Exception($"Please select from given input range from {min} to {max}");
                     }
@@ -65,7 +65,7 @@ namespace sedc.videorental.Services.Helpers
                 else
                 {
                     Console.WriteLine("Please enter valid input");
-                    Console.WriteLine($"Valid inputs:{string.Join(",",_validConfirmInput.ToArray())}{string.Join(",", _validDeclineInput.ToArray())}");
+                    Console.WriteLine($"Valid inputs:{string.Join(",", _validConfirmInput.ToArray())}{string.Join(",", _validDeclineInput.ToArray())}");
                 }
 
             }
@@ -99,22 +99,44 @@ namespace sedc.videorental.Services.Helpers
 
         public static Genre ToGenre()
         {
-            while(true)
+            while (true)
             {
                 var counter = 1;
-                foreach(var item in Enum.GetNames(typeof(Genre)))
-                    {
+                foreach (var item in Enum.GetNames(typeof(Genre)))
+                {
 
-                    Console.WriteLine("{0}, {1}",counter, item);
+                    Console.WriteLine("{0}, {1}", counter, item);
                     counter++;
                 }
-                var genreSelection = ToInteger(1,Enum.GetNames(typeof(Genre)).Length);
+                var genreSelection = ToInteger(1, Enum.GetNames(typeof(Genre)).Length);
                 var isValid = Enum.TryParse(typeof(Genre), (genreSelection - 1).ToString(), out var genre);
                 if (isValid)
                 {
                     return (Genre)genre;
                 }
                 Console.WriteLine("Please enter valid input");
+            }
+        }
+
+        public static Discount ToDiscount()
+        {
+            while (true)
+            {
+                var counter = 1;
+                foreach (var item in Enum.GetNames(typeof(Discount)))
+                {
+
+                    Console.WriteLine("{0}, {1}", counter, item);
+                    counter++;
+                }
+                var discountSelection = ToInteger(1, Enum.GetNames(typeof(Genre)).Length);
+                var isValid = Enum.TryParse(typeof(Discount), (discountSelection - 1).ToString(), out var discount);
+                if (isValid)
+                {
+                    return (Discount)discount;
+                }
+                Console.WriteLine("Please enter valid input");
+
             }
         }
     }
