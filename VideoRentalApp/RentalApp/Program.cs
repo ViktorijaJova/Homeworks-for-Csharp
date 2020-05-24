@@ -22,6 +22,7 @@ namespace Sedc.videorental.App
 
             var _userService = new UserService();
             var _movieService = new MovieService();
+            var _adminService = new AdminService();
             User user = null;
            
             string errorMessage = string.Empty;
@@ -40,7 +41,7 @@ namespace Sedc.videorental.App
                     1:// login as admin
                         while (!isLoggedIn)
                         {
-                            user = _userService.LoginAsAdmin();
+                            user = _adminService.LoginAsAdmin();
 
                             isLoggedIn = !isLoggedIn;
                         }
@@ -80,6 +81,30 @@ namespace Sedc.videorental.App
                     Screen.ClearScreen();
                     Screen.ErrorMessage(errorMessage);
                     errorMessage = string.Empty;
+                    if (user.IsSubscriptionExpired)
+                    {
+                       
+                        Console.WriteLine("\nYour Subscription has expired and you won't be able to use the app,would you like to renew Subscription y/n ");
+                        var readline = Console.ReadLine();
+                        LoadingHelpers.Spiner();
+                        if (readline == "y")
+                        {
+
+                            var renewed = user.SubscriptionRenwed = DateTime.Now;
+                            user.IsSubscriptionExpired = !user.IsSubscriptionExpired;
+
+                            Console.WriteLine($"\nThank you {user.FullName} your subscription has been renewed {renewed}!");
+                        }
+                         else  {
+                            Console.WriteLine("Please renew your subscription if you want to continue using this app,Thank you!");
+                            Thread.Sleep(3000);
+                            break;
+
+                        }
+                  
+
+                    }
+
                     Screen.MainMenu(user.FullName);
                     var selection = InputParser.ToInteger(1, 5);
                     switch (selection)
@@ -147,7 +172,7 @@ namespace Sedc.videorental.App
 
 
                         case 3: // view users
-                            _userService.ViewUsersListAsAdmin(user);
+                            _adminService.ViewUsersListAsAdmin(user);
                             break;
 
 
@@ -175,14 +200,7 @@ namespace Sedc.videorental.App
             
            
         }
-        // log in admin
-        //remove movie by admin
-        //add movie by admin
-        // see all users
-        // see users with expired subscriptions
-        //let user know he's subscription is expired and let him renew it if he wants to rent a video
-        // offer special movies for rent - on discount and premiers
-        //rent them and return them (fix bug)
+       
 
 
     }
