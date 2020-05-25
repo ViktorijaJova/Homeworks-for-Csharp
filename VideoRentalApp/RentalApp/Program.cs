@@ -160,12 +160,12 @@ namespace Sedc.videorental.App
                     switch (selection)
                     {
                         case 1://view movies
-                            _movieService.ViewMovieListAsAdmin(user);
+                            _adminService.ViewMovieListAsAdmin(user);
 
                             break;
 
                         case 2:// add movie
-                            _movieService.AddMovieByAdmin();
+                            _adminService.AddMovieByAdmin();
 
                             //add movie
                             break;
@@ -177,7 +177,7 @@ namespace Sedc.videorental.App
 
 
                         case 4:// remove movie
-                            _movieService.RemoveMovieByAdmin();
+                            _adminService.RemoveMovieByAdmin();
                             break;
                         case 5: //exit 
                             Console.WriteLine("Your work day is over, hope you had fun, see you tomorrow :)");
