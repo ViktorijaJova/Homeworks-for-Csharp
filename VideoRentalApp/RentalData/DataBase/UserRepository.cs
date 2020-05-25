@@ -30,5 +30,13 @@ namespace sedc.videorental.data.DataBase
         {
             return Users.FirstOrDefault(_user => _user.CardNumber == idCard);
         }
+
+
+        public List<User> GetAllUsers()
+        {
+            return Users;
+        }
+
+       
     }
 }
