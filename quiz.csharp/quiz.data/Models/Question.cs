@@ -15,7 +15,7 @@ namespace quiz.data.Models
         public string Choices { get; set; }
 
 
-        public string[] SS { get; set; }
+       
 
 
 
